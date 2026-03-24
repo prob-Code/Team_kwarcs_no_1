@@ -300,24 +300,7 @@ export default function WorkerHomeScreen() {
         <VerifiedBadge verified={user?.aadhaarVerified} />
       </View>
 
-      <View style={styles.tabBar}>
-        {[
-          { id: 'jobs', label: t('dashboard'), icon: '⚡' },
-          { id: 'my_jobs', label: t('my_jobs'), icon: '📋' },
-          { id: 'earnings', label: t('wallet'), icon: '💰' },
-        ].map((tab) => (
-          <TouchableOpacity
-            key={tab.id}
-            style={[styles.tab, activeTab === tab.id && styles.tabActive]}
-            onPress={() => setActiveTab(tab.id)}
-          >
-            <Text style={styles.tabIcon}>{tab.icon}</Text>
-            <Text style={[styles.tabLabel, activeTab === tab.id && styles.tabLabelActive]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Middle Tab Bar is removed for a cleaner Unified Dashboard Experience */}
 
       {/* Content */}
       <ScrollView
@@ -326,7 +309,8 @@ export default function WorkerHomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryContainer} />}
         showsVerticalScrollIndicator={false}
       >
-        {activeTab === 'jobs' && (
+        {/* Dashboard Feed - Shared for Home, My Jobs, and Earnings */}
+        {activeTab !== 'profile' && (
           <View style={{ gap: spacing.md }}>
             {/* 1. Digital Naka - Map Section at Top */}
             <Card variant="elevated" padding="none" style={{ overflow: 'hidden' }}>
@@ -468,12 +452,12 @@ export default function WorkerHomeScreen() {
           <TouchableOpacity
             key={index}
             style={styles.navItem}
-            onPress={() => setActiveTab(item.id)}
+            onPress={() => setActiveTab(item.id === 'profile' ? 'profile' : 'jobs')}
           >
-            <Text style={[styles.navIcon, activeTab === item.id && styles.navIconActive]}>
+            <Text style={[styles.navIcon, (activeTab === item.id || (activeTab === 'jobs' && item.id !== 'profile')) && styles.navIconActive]}>
               {item.icon}
             </Text>
-            <Text style={[styles.navLabel, activeTab === item.id && styles.navLabelActive]}>
+            <Text style={[styles.navLabel, (activeTab === item.id || (activeTab === 'jobs' && item.id !== 'profile')) && styles.navLabelActive]}>
               {item.label}
             </Text>
             {item.badge > 0 && (
