@@ -26,3 +26,6 @@ hackathon/
     ├── train.py
     └── requirements.txt
 
+# Full-Stack Data & ML Analytics App
+
+A production-grade, full-stack application designed rapidly for a hackathon. The platform features an **Expo React Native frontend** paired with a **FastAPI backend** that interfaces with a robust **scikit-learn ML pipeline**. Identity, state, and real-time streams are powered by **Supabase**.
