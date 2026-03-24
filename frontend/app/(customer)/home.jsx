@@ -439,11 +439,13 @@ export default function CustomerHomeScreen() {
 
             <Card variant="elevated" padding="lg">
               <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>{t('app_language')}</Text>
-              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm }}>
                 <Button title="English" onPress={() => setLang('en')} variant={lang === 'en' ? 'accent' : 'outline'} size="sm" />
                 <Button title="हिन्दी" onPress={() => setLang('hi')} variant={lang === 'hi' ? 'accent' : 'outline'} size="sm" />
                 <Button title="मराठी" onPress={() => setLang('mr')} variant={lang === 'mr' ? 'accent' : 'outline'} size="sm" />
-              </View>
+                <Button title="ગુજરાતી" onPress={() => Alert.alert('Coming Soon', 'Stay tuned for more languages!')} variant="outline" size="sm" />
+                <Button title="தமிழ்" onPress={() => Alert.alert('Coming Soon', 'Stay tuned for more languages!')} variant="outline" size="sm" />
+              </ScrollView>
             </Card>
 
             <Card variant="elevated" padding="lg">
