@@ -1,18 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  Animated,
-  RefreshControl,
-  Alert,
-  Modal,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Animated, RefreshControl, Alert, Modal, Dimensions } from 'react-native';
+import { connectSocket, disconnectSocket, onEvent, offEvent, emitEvent } from '../../lib/socket';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../hooks/useApp';
@@ -154,9 +142,11 @@ export default function CustomerHomeScreen() {
 
       try {
         await api.createJob(jobData);
+        emitEvent('job:new', jobData);
       } catch (err) {
         console.warn('Network issue creating job. Faking success for demo.', err);
         setMyJobs(prev => [{...jobData, id: `demo-${Date.now()}`, status: 'open'}, ...prev]);
+        emitEvent('job:new', jobData);
       }
 
       Alert.alert('AI Job Posted!', `Successfully detected need for a ${parsed.skill} and posted.`, [
@@ -198,9 +188,11 @@ export default function CustomerHomeScreen() {
       
       try {
         await api.createJob(jobData);
+        emitEvent('job:new', jobData);
       } catch (err) {
         console.warn('Network issue creating job. Faking success for demo.', err);
         setMyJobs(prev => [{...jobData, id: `demo-${Date.now()}`, status: 'open'}, ...prev]);
+        emitEvent('job:new', jobData);
       }
       
       Alert.alert('Job Posted!', 'Nearby workers will be notified instantly', [

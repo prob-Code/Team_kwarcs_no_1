@@ -48,6 +48,7 @@ export default function WorkerHomeScreen() {
   }, []);
 
   useEffect(() => {
+    // 1. Notification Animation
     if (notifications.length > 0 && !notifications[0].read) {
       Animated.sequence([
         Animated.timing(notifAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
@@ -55,6 +56,19 @@ export default function WorkerHomeScreen() {
         Animated.timing(notifAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
       ]).start();
     }
+
+    // 2. REAL-TIME JOB SYNC
+    onEvent('job:new', (newJob) => {
+      console.log('REAL-TIME: New job received!', newJob.title);
+      setJobs((prev) => {
+        if (prev.find(j => j.id === newJob.id)) return prev;
+        return [newJob, ...prev];
+      });
+    });
+
+    return () => {
+      offEvent('job:new');
+    };
   }, [notifications]);
 
   const loadJobs = async () => {
@@ -320,9 +334,9 @@ export default function WorkerHomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {activeTab === 'jobs' && (
-          <>
+          <View style={{ gap: spacing.md }}>
             {/* 1. Digital Naka - Map Section at Top */}
-            <Card variant="elevated" padding="none" style={{ marginBottom: spacing.md, overflow: 'hidden' }}>
+            <Card variant="elevated" padding="none" style={{ overflow: 'hidden' }}>
               <View style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
                 <Text style={styles.mapTitle}>🗺️ {t('digital_naka')}</Text>
                 <Text style={{ ...typography.bodySm, color: colors.textMuted }}>{t('live_tracking')}</Text>
@@ -339,7 +353,7 @@ export default function WorkerHomeScreen() {
                         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                         <style>
                             body { padding: 0; margin: 0; overflow: hidden; }
-                            html, body, #map { height: 100%; width: 100%; background: #E5E3DF; }
+                            html, body, #map { height: 100%; width: 100%; background: #F8F9FA; }
                             .pin { width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
                         </style>
                     </head>
@@ -357,14 +371,9 @@ export default function WorkerHomeScreen() {
                                   L.marker([lat, lng], {icon: icon}).addTo(map);
                               }
                             };
-
-                            // Red (Jobs), Blue (Workers), Purple (Painters/Pentors)
-                            addPins(10, '#F44336', 0.04);
-                            addPins(15, '#2196F3', 0.05);
-                            addPins(12, '#9C27B0', 0.045); 
-
-                            var userIcon = L.divIcon({ className: '', html: '<div class="pin" style="background:#000;width:20px;height:20px;"></div>' });
-                            L.marker([19.076, 72.877], {icon: userIcon}).addTo(map);
+                            addPins(10, '#F44336', 0.04); // Jobs
+                            addPins(15, '#2196F3', 0.05); // Workers
+                            addPins(12, '#9C27B0', 0.045); // Painters
                         </script>
                     </body>
                     </html>
@@ -381,23 +390,23 @@ export default function WorkerHomeScreen() {
               </View>
             </Card>
 
-            {/* 2. Earnings & Status Row */}
-            <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
-              <Card variant="accent" padding="md" style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={{ ...typography.labelSm, color: colors.primary }}>{t('total_earnings')}</Text>
+            {/* 2. Wallet & Status Stacking (Fixes 'stuck at bottom') */}
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <Card variant="accent" padding="md" style={{ flex: 1, height: 110, justifyContent: 'center' }}>
+                <Text style={{ ...typography.labelSm, color: colors.primary }}>💰 {t('total_earnings').toUpperCase()}</Text>
                 <Text style={{ ...typography.headlineMd, color: colors.primary }}>₹{weeklyEarnings.toLocaleString()}</Text>
+                <Text style={{ ...typography.labelSm, color: colors.primary }}>Today: {todayJobs} jobs</Text>
               </Card>
-              <Card variant="elevated" padding="md" style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={{ ...typography.labelSm, color: colors.textMuted }}>{t('level')}</Text>
+              <Card variant="elevated" padding="md" style={{ flex: 1, height: 110, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ ...typography.labelSm, color: colors.textMuted }}>{t('level').toUpperCase()}</Text>
                 <Text style={{ ...typography.titleLg, color: '#CD7F32' }}>🥉 Bronze</Text>
+                <Text style={{ ...typography.labelSm, color: colors.textMuted }}>LVL 1 - STATUS</Text>
               </Card>
             </View>
 
-            {/* 3. Nearby Jobs List */}
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>
-                {t('jobs_near_you')}
-              </Text>
+            {/* 3. Nearby Jobs List (Stacked) */}
+            <View style={[styles.sectionHeader, { marginTop: spacing.md }]}>
+              <Text style={styles.sectionTitle}>{t('jobs_near_you')}</Text>
               <Text style={styles.sectionCount}>{jobs.length} found</Text>
             </View>
             {jobs.length === 0 ? (
@@ -410,45 +419,16 @@ export default function WorkerHomeScreen() {
                 <JobCard key={job.id} job={job} isWorker onApply={handleApplyJob} />
               ))
             )}
-          </>
-        )}
 
-        {activeTab === 'earnings' && (
-          <>
-            <Card variant="accent" padding="xl" style={styles.earningsMain}>
-              <Text style={styles.earningsLabel}>Total Earnings This Week</Text>
-              <Text style={styles.earningsAmount}>₹{weeklyEarnings.toLocaleString()}</Text>
-              <Text style={styles.earningsJobs}>{todayJobs} jobs completed today</Text>
-            </Card>
-            <View style={styles.earningsGrid}>
-              <Card variant="elevated" padding="md" style={styles.earningsStat}>
-                <Text style={styles.earningsStatValue}>₹{(weeklyEarnings * 4).toLocaleString()}</Text>
-                <Text style={styles.earningsStatLabel}>This Month</Text>
-              </Card>
-              <Card variant="elevated" padding="md" style={styles.earningsStat}>
-                <Text style={styles.earningsStatValue}>{user?.jobsCompleted || 0}</Text>
-                <Text style={styles.earningsStatLabel}>Total Jobs</Text>
-              </Card>
+            {/* 4. My Active Jobs (Stacked below) */}
+            <View style={[styles.sectionHeader, { marginTop: spacing.lg }]}>
+              <Text style={styles.sectionTitle}>{t('my_jobs')}</Text>
             </View>
-            <Card variant="elevated" padding="lg">
-              <Text style={styles.earningsTip}>
-                💡 Tip: Keep your availability on to get 3x more job offers!
-              </Text>
+            <Card variant="elevated" padding="lg" style={{ borderStyle: 'dashed', borderWidth: 1, borderColor: colors.border, marginBottom: spacing.xl }}>
+              <Text style={styles.emptyTitle}>Accepted Applications will appear here</Text>
+              <Text style={styles.emptyDesc}>Accept jobs from the feed above to start working!</Text>
             </Card>
-          </>
-        )}
-        {activeTab === 'my_jobs' && (
-          <>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>
-                {lang === 'hi' ? 'मेरे काम' : 'My Applications'}
-              </Text>
-            </View>
-            <Card variant="elevated" padding="lg">
-              <Text style={styles.emptyTitle}>You haven't accepted any jobs yet</Text>
-              <Text style={styles.emptyDesc}>Go to Home to find nearby jobs and hit Accept & WhatsApp!</Text>
-            </Card>
-          </>
+          </View>
         )}
 
         {activeTab === 'profile' && (
