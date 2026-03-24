@@ -274,6 +274,23 @@ export default function CustomerHomeScreen() {
           </View>
         </View>
         <View style={styles.headerRight}>
+          <TouchableOpacity 
+            style={[styles.notifBtn, { marginRight: spacing.sm, backgroundColor: colors.accentLight }]} 
+            onPress={() => {
+              Alert.alert(
+                t('app_language'),
+                'Select your language / अपनी भाषा चुनें',
+                [
+                  { text: 'English 🇺🇸', onPress: () => setLang('en') },
+                  { text: 'हिन्दी 🇮🇳', onPress: () => setLang('hi') },
+                  { text: 'मराठी 🚩', onPress: () => setLang('mr') },
+                  { text: 'Cancel', style: 'cancel' }
+                ]
+              );
+            }}
+          >
+            <Text style={{ fontSize: 18 }}>{lang === 'hi' ? '🇮🇳' : lang === 'mr' ? '🚩' : '🇺🇸'}</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.notifBtn}>
             <Text style={styles.notifBtnIcon}>🔔</Text>
             {unreadCount > 0 && (

@@ -180,19 +180,30 @@ export default function WorkerHomeScreen() {
           </View>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.notifBtn}>
+          <TouchableOpacity 
+            style={[styles.notifBtn, { marginRight: spacing.sm, backgroundColor: colors.accentLight }]} 
+            onPress={() => {
+              Alert.alert(
+                t('app_language'),
+                'Select your language / अपनी भाषा चुनें',
+                [
+                  { text: 'English 🇺🇸', onPress: () => setLang('en') },
+                  { text: 'हिन्दी 🇮🇳', onPress: () => setLang('hi') },
+                  { text: 'मराठी 🚩', onPress: () => setLang('mr') },
+                  { text: 'Cancel', style: 'cancel' }
+                ]
+              );
+            }}
+          >
+            <Text style={{ fontSize: 18 }}>{lang === 'hi' ? '🇮🇳' : lang === 'mr' ? '🚩' : '🇺🇸'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.notifBtn} onPress={() => router.push('/notifications')}>
             <Text style={styles.notifBtnIcon}>🔔</Text>
             {unreadCount > 0 && (
               <View style={styles.notifBadge}>
                 <Text style={styles.notifBadgeText}>{unreadCount}</Text>
               </View>
             )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.langBtn}
-            onPress={() => {}}
-          >
-            <Text style={styles.langBtnText}>{lang === 'hi' ? 'EN' : 'हि'}</Text>
           </TouchableOpacity>
         </View>
       </View>
