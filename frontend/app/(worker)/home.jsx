@@ -31,7 +31,7 @@ const { width } = Dimensions.get('window');
 
 export default function WorkerHomeScreen() {
   const router = useRouter();
-  const { user, notifications, fetchJobs, fetchNotifications, connected, lang } = useApp();
+  const { user, notifications, fetchJobs, fetchNotifications, connected, lang, setLang, t } = useApp();
 
   const [available, setAvailable] = useState(user?.available ?? true);
   const [jobs, setJobs] = useState([]);
@@ -202,7 +202,7 @@ export default function WorkerHomeScreen() {
         <View style={styles.availabilityRow}>
           <View style={styles.availabilityInfo}>
             <Text style={styles.availabilityTitle}>
-              {available ? '✅ You are Available' : '⏸️ You are Offline'}
+              {available ? `✅ ${t('you_are_available')}` : `⏸️ ${t('you_are_offline')}`}
             </Text>
             <Text style={styles.availabilityDesc}>
               {available ? 'Jobs will be shown to nearby customers' : 'Toggle on to start receiving jobs'}
@@ -225,8 +225,8 @@ export default function WorkerHomeScreen() {
       >
         <Text style={{ fontSize: 24 }}>✨🎙️</Text>
         <View style={{ flex: 1 }}>
-          <Text style={{ ...typography.titleMd, color: colors.primary }}>Tell AI What Work You Want</Text>
-          <Text style={{ ...typography.bodySm, color: colors.textMuted }}>e.g. "Mujhe painter ka kaam chahiye"</Text>
+          <Text style={{ ...typography.titleMd, color: colors.primary }}>{t('tell_ai_skills')}</Text>
+          <Text style={{ ...typography.bodySm, color: colors.textMuted }}>{t('tell_ai_skills_desc')}</Text>
         </View>
       </TouchableOpacity>
 
@@ -284,9 +284,9 @@ export default function WorkerHomeScreen() {
 
       <View style={styles.tabBar}>
         {[
-          { id: 'jobs', label: 'Dashboard', icon: '⚡' },
-          { id: 'my_jobs', label: 'My Jobs', icon: '📋' },
-          { id: 'earnings', label: 'Wallet', icon: '💰' },
+          { id: 'jobs', label: t('dashboard'), icon: '⚡' },
+          { id: 'my_jobs', label: t('my_jobs'), icon: '📋' },
+          { id: 'earnings', label: t('wallet'), icon: '💰' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -313,8 +313,8 @@ export default function WorkerHomeScreen() {
             {/* 1. Digital Naka - Map Section at Top */}
             <Card variant="elevated" padding="none" style={{ marginBottom: spacing.md, overflow: 'hidden' }}>
               <View style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
-                <Text style={styles.mapTitle}>🗺️ Digital Naka - Live Map</Text>
-                <Text style={{ ...typography.bodySm, color: colors.textMuted }}>Live tracking of workers and pins for jobs near you.</Text>
+                <Text style={styles.mapTitle}>🗺️ {t('digital_naka')}</Text>
+                <Text style={{ ...typography.bodySm, color: colors.textMuted }}>{t('live_tracking')}</Text>
               </View>
               <View style={{ height: 260, width: '100%', backgroundColor: '#eee' }}>
                 <WebView
@@ -350,7 +350,7 @@ export default function WorkerHomeScreen() {
                             // Red (Jobs), Blue (Workers), Purple (Painters/Pentors)
                             addPins(10, '#F44336', 0.04);
                             addPins(15, '#2196F3', 0.05);
-                            addPins(12, '#9C27B0', 0.045); // Added Painters (Purple)
+                            addPins(12, '#9C27B0', 0.045); 
 
                             var userIcon = L.divIcon({ className: '', html: '<div class="pin" style="background:#000;width:20px;height:20px;"></div>' });
                             L.marker([19.076, 72.877], {icon: userIcon}).addTo(map);
@@ -364,20 +364,20 @@ export default function WorkerHomeScreen() {
                 />
               </View>
               <View style={[styles.mapLegend, { padding: spacing.md, borderTopWidth: 1, borderTopColor: colors.border }]}>
-                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#2196F3' }]} /><Text style={styles.legendText}>Workers</Text></View>
-                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#F44336' }]} /><Text style={styles.legendText}>Jobs</Text></View>
-                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#9C27B0' }]} /><Text style={styles.legendText}>Painters</Text></View>
+                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#2196F3' }]} /><Text style={styles.legendText}>{t('workers')}</Text></View>
+                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#F44336' }]} /><Text style={styles.legendText}>{t('jobs')}</Text></View>
+                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#9C27B0' }]} /><Text style={styles.legendText}>{t('painters')}</Text></View>
               </View>
             </Card>
 
             {/* 2. Earnings & Status Row */}
             <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
               <Card variant="accent" padding="md" style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={{ ...typography.labelSm, color: colors.primary }}>TOTAL EARNINGS</Text>
+                <Text style={{ ...typography.labelSm, color: colors.primary }}>{t('total_earnings')}</Text>
                 <Text style={{ ...typography.headlineMd, color: colors.primary }}>₹{weeklyEarnings.toLocaleString()}</Text>
               </Card>
               <Card variant="elevated" padding="md" style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={{ ...typography.labelSm, color: colors.textMuted }}>LEVEL</Text>
+                <Text style={{ ...typography.labelSm, color: colors.textMuted }}>{t('level')}</Text>
                 <Text style={{ ...typography.titleLg, color: '#CD7F32' }}>🥉 Bronze</Text>
               </Card>
             </View>
@@ -385,14 +385,14 @@ export default function WorkerHomeScreen() {
             {/* 3. Nearby Jobs List */}
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>
-                {lang === 'hi' ? 'पास के काम' : 'Jobs Near You'}
+                {t('jobs_near_you')}
               </Text>
               <Text style={styles.sectionCount}>{jobs.length} found</Text>
             </View>
             {jobs.length === 0 ? (
               <Card variant="flat" padding="xl" style={styles.emptyCard}>
                 <Text style={styles.emptyIcon}>🔍</Text>
-                <Text style={styles.emptyTitle}>Searching for jobs...</Text>
+                <Text style={styles.emptyTitle}>{t('search_jobs')}</Text>
               </Card>
             ) : (
               jobs.map((job) => (
@@ -451,21 +451,21 @@ export default function WorkerHomeScreen() {
             </Card>
 
             <Card variant="elevated" padding="lg">
-              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>App Language</Text>
+              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>{t('app_language')}</Text>
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Button title="English" onPress={() => Alert.alert('Language', 'Set to English')} variant={lang === 'en' ? 'accent' : 'outline'} size="sm" />
-                <Button title="हिन्दी (Hindi)" onPress={() => Alert.alert('Language', 'Set to Hindi')} variant={lang === 'hi' ? 'accent' : 'outline'} size="sm" />
-                <Button title="मराठी (Marathi)" onPress={() => Alert.alert('Language', 'Set to Marathi')} variant="outline" size="sm" />
+                <Button title="English" onPress={() => setLang('en')} variant={lang === 'en' ? 'accent' : 'outline'} size="sm" />
+                <Button title="हिन्दी" onPress={() => setLang('hi')} variant={lang === 'hi' ? 'accent' : 'outline'} size="sm" />
+                <Button title="मराठी" onPress={() => setLang('mr')} variant={lang === 'mr' ? 'accent' : 'outline'} size="sm" />
               </View>
             </Card>
 
             <Card variant="elevated" padding="lg">
-              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>Update Profile with Voice 🗣️</Text>
-              <Text style={[styles.bodySm, { color: colors.textMuted, marginBottom: spacing.md }]}>Press the button below and type or speak to tell AI what your skills are.</Text>
-              <Button title="✨🎙️ Tell AI My Skills" onPress={() => setShowVoiceModal(true)} variant="primary" size="lg" />
+              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>{t('update_profile_voice')}</Text>
+              <Text style={[styles.bodySm, { color: colors.textMuted, marginBottom: spacing.md }]}>{t('voice_ai_desc')}</Text>
+              <Button title={t('tell_ai_skills_btn')} onPress={() => setShowVoiceModal(true)} variant="primary" size="lg" />
             </Card>
 
-            <Button title="Logout" variant="outline" onPress={() => router.replace('/login')} style={{ marginTop: spacing.xl, borderColor: colors.danger }} textStyle={{ color: colors.danger }} />
+            <Button title={t('logout')} variant="outline" onPress={() => router.replace('/login')} style={{ marginTop: spacing.xl, borderColor: colors.danger, marginBottom: spacing.xl }} textStyle={{ color: colors.danger }} />
           </View>
         )}
       </ScrollView>

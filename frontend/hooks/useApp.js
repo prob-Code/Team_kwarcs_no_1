@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { connectSocket, disconnectSocket, onEvent, offEvent } from '../lib/socket';
 import api from '../lib/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { translations } from '../constants/translations';
 
 const AppContext = createContext(null);
 
@@ -13,7 +15,22 @@ export function AppProvider({ children }) {
   const [jobs, setJobs] = useState([]);
   const [stats, setStats] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [lang, setLang] = useState('en'); // 'en' | 'hi'
+  const [lang, setLang] = useState('en');
+
+  // Load language preference on launch
+  useEffect(() => {
+    (async () => {
+      const saved = await AsyncStorage.getItem('app_lang');
+      if (saved) setLang(saved);
+    })();
+  }, []);
+
+  const changeLang = async (newLang) => {
+    setLang(newLang);
+    await AsyncStorage.setItem('app_lang', newLang);
+  };
+
+  const t = (key) => translations[lang]?.[key] || translations['en']?.[key] || key;
 
   // Login mock without OTP networking
   const login = useCallback(async (phone, otp, userRole, name) => {
@@ -181,7 +198,8 @@ export function AppProvider({ children }) {
     stats,
     connected,
     lang,
-    setLang,
+    setLang: changeLang,
+    t,
     login,
     logout,
     fetchWorkers,

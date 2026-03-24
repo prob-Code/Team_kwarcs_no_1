@@ -28,7 +28,7 @@ const { width } = Dimensions.get('window');
 
 export default function CustomerHomeScreen() {
   const router = useRouter();
-  const { user, notifications, fetchWorkers, fetchNotifications, connected, lang } = useApp();
+  const { user, notifications, fetchWorkers, fetchNotifications, connected, lang, setLang, t } = useApp();
 
   const [workers, setWorkers] = useState([]);
   const [myJobs, setMyJobs] = useState([]);
@@ -263,12 +263,12 @@ export default function CustomerHomeScreen() {
           </View>
           <View>
             <Text style={styles.greeting}>
-              {lang === 'hi' ? 'नमस्ते' : 'Hello'}, {user?.name?.split(' ')[0] || 'User'} 👋
+              {t('customer_welcome')}, {user?.name?.split(' ')[0] || 'User'} 👋
             </Text>
             <View style={styles.connectionRow}>
               <LiveDot size={6} color={connected ? colors.success : colors.danger} />
               <Text style={styles.connectionText}>
-                {connected ? 'Live • ' : 'Connecting • '}{workers.length} workers nearby
+                {connected ? 'Live • ' : 'Connecting • '}{workers.length} {t('workers').toLowerCase()} nearby
               </Text>
             </View>
           </View>
@@ -297,10 +297,8 @@ export default function CustomerHomeScreen() {
         >
           <Text style={styles.bigActionIcon}>⚡</Text>
           <View>
-            <Text style={styles.bigActionTitle}>
-              {lang === 'hi' ? 'अभी वर्कर चाहिए' : 'Need Worker NOW'}
-            </Text>
-            <Text style={styles.bigActionDesc}>Post a job & get matched instantly</Text>
+            <Text style={styles.bigActionTitle}>{t('post_job')}</Text>
+            <Text style={styles.bigActionDesc}>{t('post_job_desc')}</Text>
           </View>
         </TouchableOpacity>
       </Animated.View>
@@ -308,8 +306,8 @@ export default function CustomerHomeScreen() {
       {/* Tab Navigation */}
       <View style={styles.tabBar}>
         {[
-          { id: 'find', label: 'Find Workers', icon: '🔍' },
-          { id: 'myjobs', label: 'My Jobs', icon: '📋' },
+          { id: 'find', label: t('workers'), icon: '🔍' },
+          { id: 'myjobs', label: t('my_jobs'), icon: '📋' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -440,21 +438,21 @@ export default function CustomerHomeScreen() {
             </Card>
 
             <Card variant="elevated" padding="lg">
-              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>App Language</Text>
+              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>{t('app_language')}</Text>
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Button title="English" onPress={() => Alert.alert('Language', 'Set to English')} variant={lang === 'en' ? 'accent' : 'outline'} size="sm" />
-                <Button title="हिन्दी (Hindi)" onPress={() => Alert.alert('Language', 'Set to Hindi')} variant={lang === 'hi' ? 'accent' : 'outline'} size="sm" />
-                <Button title="मराठी (Marathi)" onPress={() => Alert.alert('Language', 'Set to Marathi')} variant="outline" size="sm" />
+                <Button title="English" onPress={() => setLang('en')} variant={lang === 'en' ? 'accent' : 'outline'} size="sm" />
+                <Button title="हिन्दी" onPress={() => setLang('hi')} variant={lang === 'hi' ? 'accent' : 'outline'} size="sm" />
+                <Button title="मराठी" onPress={() => setLang('mr')} variant={lang === 'mr' ? 'accent' : 'outline'} size="sm" />
               </View>
             </Card>
 
             <Card variant="elevated" padding="lg">
               <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>Rozgar AI 🗣️</Text>
-              <Text style={[styles.bodySm, { color: colors.textMuted, marginBottom: spacing.md }]}>Simply press the button below to use your voice to find any worker you need.</Text>
-              <Button title="✨🎙️ Find a Worker with AI" onPress={() => setShowVoiceModal(true)} variant="primary" size="lg" />
+              <Text style={[styles.bodySm, { color: colors.textMuted, marginBottom: spacing.md }]}>{t('find_worker_desc')}</Text>
+              <Button title={t('find_worker_ai')} onPress={() => setShowVoiceModal(true)} variant="primary" size="lg" />
             </Card>
 
-            <Button title="Logout" variant="outline" onPress={() => router.replace('/login')} style={{ marginTop: spacing.xl, borderColor: colors.danger }} textStyle={{ color: colors.danger }} />
+            <Button title={t('logout')} variant="outline" onPress={() => router.replace('/login')} style={{ marginTop: spacing.xl, borderColor: colors.danger }} textStyle={{ color: colors.danger }} />
           </View>
         )}
       </ScrollView>
@@ -465,7 +463,7 @@ export default function CustomerHomeScreen() {
           <View style={styles.modalContent}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Post a Job</Text>
+                <Text style={styles.modalTitle}>{t('post_job')}</Text>
                 <TouchableOpacity onPress={() => setShowPostJob(false)}>
                   <Text style={styles.modalClose}>✕</Text>
                 </TouchableOpacity>
@@ -588,16 +586,16 @@ export default function CustomerHomeScreen() {
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         {[
-          { id: 'find', icon: '🏠', label: 'Home' },
-          { id: 'myjobs', icon: '📋', label: 'My Jobs' },
-          { id: 'post', icon: '➕', label: 'Post Job', isMain: true },
-          { id: 'profile', icon: '👤', label: 'Profile' },
+          { id: 'find', icon: '🏠', label: t('dashboard') },
+          { id: 'myjobs', icon: '📋', label: t('my_jobs') },
+          { id: 'post', icon: '➕', label: t('post_job'), isMain: true },
+          { id: 'profile', icon: '👤', label: t('profile') },
         ].map((item, index) => (
           <TouchableOpacity
             key={index}
             style={[styles.navItem, item.isMain && styles.navItemMain]}
             onPress={() => {
-              if (item.label === 'Post Job') setShowPostJob(true);
+              if (item.id === 'post') setShowPostJob(true);
               else setActiveTab(item.id);
             }}
           >
