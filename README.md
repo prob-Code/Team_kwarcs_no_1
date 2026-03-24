@@ -34,3 +34,9 @@ By digitizing traditional *labor nakas* into interactive live maps, providing re
 
 ---
 *Built by Team Kwarcs No.1*
+
+
+
+<img width="636" height="1400" alt="image" src="https://github.com/user-attachments/assets/56cefe50-3753-4e54-bcb3-4d4060adb00e" />
+<img width="636" height="1400" alt="image" src="https://github.com/user-attachments/assets/dc432aba-f8d3-4368-891d-8424f1cd0d39" />
+
