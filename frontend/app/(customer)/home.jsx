@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Animated, RefreshControl, Alert, Modal, Dimensions } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { connectSocket, disconnectSocket, onEvent, offEvent, emitEvent } from '../../lib/socket';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';

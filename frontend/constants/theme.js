@@ -117,5 +117,5 @@ export const SKILLS = [
   { id: 'tailor', name: 'Tailor', nameHi: 'दर्जी', icon: '🧵', color: '#AB47BC' },
 ];
 
-export const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://172.20.10.2:3001';
-export const WS_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://172.20.10.2:3001';
+export const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://10.19.161.96:3001';
+export const WS_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://10.19.161.96:3001';
