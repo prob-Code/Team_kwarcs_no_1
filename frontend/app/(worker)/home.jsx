@@ -48,7 +48,7 @@ export default function WorkerHomeScreen() {
   }, []);
 
   useEffect(() => {
-    // 1. Notification Animation
+    // 1. Notification Animation - Purely UI
     if (notifications.length > 0 && !notifications[0].read) {
       Animated.sequence([
         Animated.timing(notifAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
@@ -56,20 +56,13 @@ export default function WorkerHomeScreen() {
         Animated.timing(notifAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
       ]).start();
     }
+  }, [notifications.length, notifications?.[0]?.id]);
 
-    // 2. REAL-TIME JOB SYNC
-    onEvent('job:new', (newJob) => {
-      console.log('REAL-TIME: New job received!', newJob.title);
-      setJobs((prev) => {
-        if (prev.find(j => j.id === newJob.id)) return prev;
-        return [newJob, ...prev];
-      });
-    });
-
-    return () => {
-      offEvent('job:new');
-    };
-  }, [notifications]);
+  // 2. Initial Fetch ONLY
+  useEffect(() => {
+    loadJobs();
+    fetchNotifications();
+  }, [user?.id]);
 
   const loadJobs = async () => {
     try {

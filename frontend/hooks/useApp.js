@@ -145,42 +145,43 @@ export function AppProvider({ children }) {
     }
   }, []);
 
-  // Real-time event listeners
+  // Real-time event listeners - Use stable references
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
-    const handleNotification = (notif) => {
-      setNotifications((prev) => [notif, ...prev]);
-    };
+    onEvent('notification', (notif) => {
+      setNotifications((prev) => {
+        if (prev.find(n => n.id === notif.id)) return prev;
+        return [notif, ...prev];
+      });
+    });
 
-    const handleNewJob = (job) => {
-      setJobs((prev) => [job, ...prev]);
-    };
+    onEvent('job:new', (job) => {
+      setJobs((prev) => {
+        if (prev.find(j => j.id === job.id)) return prev;
+        return [job, ...prev];
+      });
+    });
 
-    const handleWorkerAvailability = ({ workerId, available }) => {
+    onEvent('worker:availability', ({ workerId, available }) => {
       setWorkers((prev) =>
         prev.map((w) => (w.id === workerId ? { ...w, available } : w))
       );
-    };
+    });
 
-    const handleWorkerMoved = ({ workerId, lat, lng }) => {
+    onEvent('worker:moved', ({ workerId, lat, lng }) => {
       setWorkers((prev) =>
         prev.map((w) => (w.id === workerId ? { ...w, lat, lng } : w))
       );
-    };
-
-    onEvent('notification', handleNotification);
-    onEvent('job:new', handleNewJob);
-    onEvent('worker:availability', handleWorkerAvailability);
-    onEvent('worker:moved', handleWorkerMoved);
+    });
 
     return () => {
-      offEvent('notification', handleNotification);
-      offEvent('job:new', handleNewJob);
-      offEvent('worker:availability', handleWorkerAvailability);
-      offEvent('worker:moved', handleWorkerMoved);
+      offEvent('notification');
+      offEvent('job:new');
+      offEvent('worker:availability');
+      offEvent('worker:moved');
     };
-  }, [user]);
+  }, [user?.id]);
 
   const value = {
     user,
