@@ -255,23 +255,14 @@ export default function CustomerHomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* Quick Language Dropdown + Notifications stays fixed in Header wrapper if needed, 
+          but usually we want the whole page to scroll for a premium feel. 
+          I'll keep a minimalist floating header for the Language/Bell if you want, 
+          but for now, I'll merge the main ones into the Master Scroll below.
+      */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={styles.avatarSmall}>
-            <Text style={styles.avatarText}>{(user?.name || 'C')[0]}</Text>
-          </View>
-          <View>
-            <Text style={styles.greeting}>
-              {t('customer_welcome')}, {user?.name?.split(' ')[0] || 'User'} 👋
-            </Text>
-            <View style={styles.connectionRow}>
-              <LiveDot size={6} color={connected ? colors.success : colors.danger} />
-              <Text style={styles.connectionText}>
-                {connected ? 'Live • ' : 'Connecting • '}{workers.length} {t('workers').toLowerCase()} nearby
-              </Text>
-            </View>
-          </View>
+          <Text style={{ ...typography.headlineSm, color: colors.primary, fontWeight: 'bold' }}>RozgarSaathi</Text>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity 
@@ -279,7 +270,7 @@ export default function CustomerHomeScreen() {
             onPress={() => {
               Alert.alert(
                 t('app_language'),
-                'Select your language / अपनी भाषा चुनें',
+                'Select / चुनें',
                 [
                   { text: 'English 🇺🇸', onPress: () => setLang('en') },
                   { text: 'हिन्दी 🇮🇳', onPress: () => setLang('hi') },
@@ -291,159 +282,152 @@ export default function CustomerHomeScreen() {
           >
             <Text style={{ fontSize: 18 }}>{lang === 'hi' ? '🇮🇳' : lang === 'mr' ? '🚩' : '🇺🇸'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.notifBtn}>
+          <TouchableOpacity style={styles.notifBtn} onPress={() => router.push('/notifications')}>
             <Text style={styles.notifBtnIcon}>🔔</Text>
-            {unreadCount > 0 && (
-              <View style={styles.notifBadge}>
-                <Text style={styles.notifBadgeText}>{unreadCount}</Text>
-              </View>
-            )}
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Big Action Button */}
-      <Animated.View style={[styles.bigActionContainer, { transform: [{ scale: scaleAnim }] }]}>
-        <TouchableOpacity
-          style={styles.bigActionBtn}
-          onPress={() => {
-            pulseButton();
-            setShowPostJob(true);
-          }}
-          activeOpacity={0.9}
-        >
-          <Text style={styles.bigActionIcon}>⚡</Text>
-          <View>
-            <Text style={styles.bigActionTitle}>{t('post_job')}</Text>
-            <Text style={styles.bigActionDesc}>{t('post_job_desc')}</Text>
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
 
-      {/* Tab Navigation */}
-      <View style={styles.tabBar}>
-        {[
-          { id: 'find', label: t('workers'), icon: '🔍' },
-          { id: 'myjobs', label: t('my_jobs'), icon: '📋' },
-        ].map((tab) => (
-          <TouchableOpacity
-            key={tab.id}
-            style={[styles.tab, activeTab === tab.id && styles.tabActive]}
-            onPress={() => setActiveTab(tab.id)}
-          >
-            <Text style={styles.tabIcon}>{tab.icon}</Text>
-            <Text style={[styles.tabLabel, activeTab === tab.id && styles.tabLabelActive]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Skill Filter */}
-      {activeTab === 'find' && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.skillsScroll}
-          contentContainerStyle={styles.skillsContent}
-        >
-          {SKILLS.map((skill) => (
-            <TouchableOpacity
-              key={skill.id}
-              style={[
-                styles.skillChip,
-                selectedSkill === skill.id && styles.skillChipActive,
-              ]}
-              onPress={() => handleSkillFilter(skill.id)}
-            >
-              <Text style={styles.skillChipIcon}>{skill.icon}</Text>
-              <Text
-                style={[
-                  styles.skillChipText,
-                  selectedSkill === skill.id && styles.skillChipTextActive,
-                ]}
-              >
-                {lang === 'hi' ? skill.nameHi : skill.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
-
-      {/* Content */}
+      {/* MASTER CONTENT SCROLLVIEW */}
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentInner}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primaryContainer}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryContainer} />
         }
         showsVerticalScrollIndicator={false}
       >
         {activeTab === 'find' && (
-          <>
-            {/* Price Suggestion */}
-            {selectedSkill && prices[selectedSkill] && (
-              <Card variant="accent" padding="md" style={styles.priceCard}>
-                <Text style={styles.priceHintText}>
-                  💡 Fair price for {SKILLS.find((s) => s.id === selectedSkill)?.name}: ₹{prices[selectedSkill].min}–₹{prices[selectedSkill].max}/day
+          <View style={{ gap: spacing.md }}>
+            {/* 1. Header & Welcome Section merged into Scroll flow */}
+            <View style={{ paddingHorizontal: spacing.sm }}>
+               <Text style={styles.greeting}>
+                {t('customer_welcome')}, {user?.name?.split(' ')[0] || 'User'} 👷
+              </Text>
+              <View style={styles.connectionRow}>
+                <LiveDot size={8} color={connected ? colors.success : colors.danger} />
+                <Text style={styles.connectionText}>
+                  {connected ? 'Live • ' : 'Connecting • '}{workers.length} {t('workers').toLowerCase()} nearby
                 </Text>
-              </Card>
-            )}
+              </View>
+            </View>
 
+            {/* 2. Worker Tracker - Map Section */}
+            <Card variant="elevated" padding="none" style={{ overflow: 'hidden', height: 280 }}>
+              <View style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
+                <Text style={styles.mapTitle}>🗺️ {t('digital_naka')} - Workers</Text>
+                <Text style={{ ...typography.bodySm, color: colors.textMuted }}>{t('live_tracking')}</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: '#eee' }}>
+                <WebView
+                  originWhitelist={['*']}
+                  source={{ html: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                        <style>
+                            body { padding: 0; margin: 0; overflow: hidden; }
+                            html, body, #map { height: 100%; width: 100%; }
+                            .pin { width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+                        </style>
+                    </head>
+                    <body>
+                        <div id="map"></div>
+                        <script>
+                            var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([19.076, 72.877], 13);
+                            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+
+                            const addPins = (count, color, bounds) => {
+                              for(let i=0; i<count; i++) {
+                                  let lat = 19.076 + (Math.random() - 0.5) * bounds;
+                                  let lng = 72.877 + (Math.random() - 0.5) * bounds;
+                                  let icon = L.divIcon({ className: '', html: '<div class="pin" style="background:'+color+'"></div>' });
+                                  L.marker([lat, lng], {icon: icon}).addTo(map);
+                              }
+                            };
+                            addPins(15, '#2196F3', 0.05); // Workers (Blue)
+                            addPins(8, '#9C27B0', 0.04); // Painters (Purple)
+                        </script>
+                    </body>
+                    </html>
+                  ` }}
+                  style={{ flex: 1 }}
+                  pointerEvents="none"
+                />
+              </View>
+            </Card>
+
+            {/* 3. Urgent Action Bar */}
+            <TouchableOpacity
+              style={[styles.bigActionBtn, { marginHorizontal: 0, paddingHorizontal: spacing.lg }]}
+              onPress={() => setShowPostJob(true)}
+            >
+              <Text style={styles.bigActionIcon}>⚡</Text>
+              <View>
+                <Text style={styles.bigActionTitle}>{t('post_job')}</Text>
+                <Text style={styles.bigActionDesc}>{t('post_job_desc')}</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* 4. Skill Filter Chips */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm, paddingVertical: spacing.sm }}>
+              {SKILLS.map((skill) => (
+                <TouchableOpacity
+                  key={skill.id}
+                  style={[styles.skillChip, selectedSkill === skill.id && styles.skillChipActive]}
+                  onPress={() => handleSkillFilter(skill.id)}
+                >
+                  <Text style={styles.skillChipIcon}>{skill.icon}</Text>
+                  <Text style={[styles.skillChipText, selectedSkill === skill.id && styles.skillChipTextActive]}>
+                    {lang === 'hi' ? skill.nameHi : skill.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* 5. Worker List */}
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>
-                {selectedSkill
-                  ? `${SKILLS.find((s) => s.id === selectedSkill)?.name || ''} Workers`
-                  : 'Top Workers Near You'}
+                {selectedSkill ? `${SKILLS.find((s) => s.id === selectedSkill)?.name} Workers` : t('workers')}
               </Text>
-              <Text style={styles.sectionCount}>{workers.length} available</Text>
+              <Text style={styles.sectionCount}>{workers.length} {t('workers').toLowerCase()} available</Text>
             </View>
 
             {workers.length === 0 ? (
               <Card variant="flat" padding="xl" style={styles.emptyCard}>
                 <Text style={styles.emptyIcon}>🔍</Text>
                 <Text style={styles.emptyTitle}>No workers found</Text>
-                <Text style={styles.emptyDesc}>Try changing the skill filter or area</Text>
               </Card>
             ) : (
               workers.map((worker) => (
                 <WorkerCard key={worker.id} worker={worker} onHire={handleHireWorker} />
               ))
             )}
-          </>
+          </View>
         )}
 
         {activeTab === 'myjobs' && (
-          <>
+          <View style={{ gap: spacing.md }}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Your Posted Jobs</Text>
+              <Text style={styles.sectionTitle}>{t('my_posted_jobs')}</Text>
               <Text style={styles.sectionCount}>{myJobs.length} jobs</Text>
             </View>
             {myJobs.length === 0 ? (
               <Card variant="flat" padding="xl" style={styles.emptyCard}>
                 <Text style={styles.emptyIcon}>📋</Text>
-                <Text style={styles.emptyTitle}>No jobs posted yet</Text>
-                <Text style={styles.emptyDesc}>Post your first job to find workers</Text>
-                <Button
-                  title="Post a Job"
-                  onPress={() => setShowPostJob(true)}
-                  variant="accent"
-                  size="md"
-                  fullWidth={false}
-                  style={{ marginTop: spacing.md }}
-                />
+                <Text style={styles.emptyTitle}>{t('post_job_desc')}</Text>
+                <Button title={t('post_job')} onPress={() => setShowPostJob(true)} variant="accent" size="md" style={{ marginTop: spacing.md }} />
               </Card>
             ) : (
-              myJobs.map((job) => (
-                <JobCard key={job.id} job={job} isWorker={false} />
-              ))
+              myJobs.map((job) => <JobCard key={job.id} job={job} isWorker={false} />)
             )}
-          </>
+          </View>
         )}
+
         {activeTab === 'profile' && (
           <View style={{ gap: spacing.md }}>
             <Card variant="elevated" padding="xl" style={{ alignItems: 'center' }}>
