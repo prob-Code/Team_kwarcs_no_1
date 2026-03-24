@@ -1,95 +1,177 @@
-import { Pressable, Text, StyleSheet, Animated } from 'react-native';
-import { colors, space, typography, borderParams } from '../constants/theme';
-import { useRef } from 'react';
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
+import { colors, borderRadius, typography, shadows } from '../constants/theme';
 
-export default function Button({ title, variant = 'primary', onPress, style, icon }) {
-  const scale = useRef(new Animated.Value(1)).current;
+export default function Button({
+  title,
+  onPress,
+  variant = 'primary',
+  size = 'md',
+  icon,
+  loading = false,
+  disabled = false,
+  fullWidth = true,
+  style,
+  textStyle,
+}) {
+  const buttonStyles = [
+    styles.base,
+    styles[variant],
+    styles[`size_${size}`],
+    fullWidth && styles.fullWidth,
+    disabled && styles.disabled,
+    style,
+  ];
 
-  const handlePressIn = () => {
-    Animated.timing(scale, {
-      toValue: 0.97,
-      duration: 80,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.timing(scale, {
-      toValue: 1,
-      duration: 80,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const isPrimary = variant === 'primary';
-  const isSecondary = variant === 'secondary';
-  const isDestructive = variant === 'destructive';
+  const textStyles = [
+    styles.text,
+    styles[`text_${variant}`],
+    styles[`textSize_${size}`],
+    disabled && styles.textDisabled,
+    textStyle,
+  ];
 
   return (
-    <Animated.View style={[{ transform: [{ scale }] }, style]}>
-      <Pressable
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        onPress={onPress}
-        style={[
-          styles.base,
-          isPrimary && styles.primary,
-          isSecondary && styles.secondary,
-          isDestructive && styles.destructive,
-        ]}
-      >
-        {icon && icon}
-        <Text
-          style={[
-            styles.text,
-            isPrimary && styles.primaryText,
-            isSecondary && styles.secondaryText,
-            isDestructive && styles.destructiveText,
-          ]}
-        >
-          {title}
-        </Text>
-      </Pressable>
-    </Animated.View>
+    <TouchableOpacity
+      style={buttonStyles}
+      onPress={onPress}
+      disabled={disabled || loading}
+      activeOpacity={0.8}
+    >
+      {loading ? (
+        <ActivityIndicator
+          color={variant === 'primary' || variant === 'accent' ? colors.white : colors.primary}
+          size="small"
+        />
+      ) : (
+        <View style={styles.content}>
+          {icon && <Text style={[styles.icon, textStyles]}>{icon}</Text>}
+          <Text style={textStyles}>{title}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   base: {
-    height: 48,
-    borderRadius: borderParams.radiusBase,
-    justifyContent: 'center',
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
+    justifyContent: 'center',
     flexDirection: 'row',
-    paddingHorizontal: space.md,
   },
-  text: {
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    fontFamily: typography.bodyMedium,
-    fontSize: 14,
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
+  icon: {
+    fontSize: 18,
+  },
+  fullWidth: {
+    width: '100%',
+  },
+
+  // Variants
   primary: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
+    ...shadows.sm,
   },
-  primaryText: {
-    color: '#000',
-    fontWeight: 'bold',
+  accent: {
+    backgroundColor: colors.primaryContainer,
+    ...shadows.sm,
   },
   secondary: {
+    backgroundColor: colors.surfaceContainer,
+  },
+  outline: {
     backgroundColor: 'transparent',
-    borderWidth: borderParams.width,
-    borderColor: colors.accent,
+    borderWidth: 2,
+    borderColor: colors.primaryContainer,
   },
-  secondaryText: {
-    color: colors.accent,
-  },
-  destructive: {
+  ghost: {
     backgroundColor: 'transparent',
-    borderWidth: borderParams.width,
-    borderColor: colors.danger,
   },
-  destructiveText: {
-    color: colors.danger,
+  danger: {
+    backgroundColor: colors.danger,
+    ...shadows.sm,
+  },
+  success: {
+    backgroundColor: colors.success,
+    ...shadows.sm,
+  },
+  white: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadows.sm,
+  },
+
+  // Sizes
+  size_sm: {
+    height: 36,
+    paddingHorizontal: 16,
+  },
+  size_md: {
+    height: 48,
+    paddingHorizontal: 24,
+  },
+  size_lg: {
+    height: 56,
+    paddingHorizontal: 32,
+  },
+  size_xl: {
+    height: 64,
+    paddingHorizontal: 40,
+  },
+
+  // Text
+  text: {
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  text_primary: {
+    color: colors.white,
+  },
+  text_accent: {
+    color: colors.white,
+  },
+  text_secondary: {
+    color: colors.text,
+  },
+  text_outline: {
+    color: colors.primaryContainer,
+  },
+  text_ghost: {
+    color: colors.primary,
+  },
+  text_danger: {
+    color: colors.white,
+  },
+  text_success: {
+    color: colors.white,
+  },
+  text_white: {
+    color: colors.text,
+  },
+
+  textSize_sm: {
+    fontSize: 13,
+  },
+  textSize_md: {
+    fontSize: 15,
+  },
+  textSize_lg: {
+    fontSize: 17,
+  },
+  textSize_xl: {
+    fontSize: 19,
+  },
+
+  disabled: {
+    opacity: 0.5,
+  },
+  textDisabled: {
+    opacity: 0.7,
   },
 });

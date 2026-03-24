@@ -1,39 +1,69 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { View, Animated, StyleSheet } from 'react-native';
 import { colors } from '../constants/theme';
 
-export default function LiveDot({ style }) {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+export default function LiveDot({ size = 8, color = colors.primaryContainer }) {
+  const opacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const animation = Animated.sequence([
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 750,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0.3,
-        duration: 750,
-        useNativeDriver: true,
-      }),
-    ]);
-
-    Animated.loop(animation).start();
-
-    return () => opacity.stopAnimation();
-  }, [opacity]);
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, []);
 
   return (
-    <Animated.View style={[styles.dot, { opacity }, style]} />
+    <View style={styles.container}>
+      <Animated.View
+        style={[
+          styles.dot,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: color,
+            opacity,
+          },
+        ]}
+      />
+      <View
+        style={[
+          styles.ring,
+          {
+            width: size * 2.5,
+            height: size * 2.5,
+            borderRadius: size * 1.25,
+            borderColor: color,
+          },
+        ]}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.accent,
+    position: 'absolute',
+    zIndex: 2,
+  },
+  ring: {
+    borderWidth: 2,
+    opacity: 0.3,
   },
 });
