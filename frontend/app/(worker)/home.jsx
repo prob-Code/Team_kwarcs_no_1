@@ -15,6 +15,7 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../hooks/useApp';
 import Card from '../../components/Card';
@@ -281,12 +282,11 @@ export default function WorkerHomeScreen() {
         <VerifiedBadge verified={user?.aadhaarVerified} />
       </View>
 
-      {/* Tab Navigation */}
       <View style={styles.tabBar}>
         {[
-          { id: 'jobs', label: 'Nearby Jobs', icon: '📋' },
-          { id: 'map', label: 'Digital Naka', icon: '🗺️' },
-          { id: 'earnings', label: 'Earnings', icon: '💰' },
+          { id: 'jobs', label: 'Dashboard', icon: '⚡' },
+          { id: 'my_jobs', label: 'My Jobs', icon: '📋' },
+          { id: 'earnings', label: 'Wallet', icon: '💰' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -310,6 +310,79 @@ export default function WorkerHomeScreen() {
       >
         {activeTab === 'jobs' && (
           <>
+            {/* 1. Digital Naka - Map Section at Top */}
+            <Card variant="elevated" padding="none" style={{ marginBottom: spacing.md, overflow: 'hidden' }}>
+              <View style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
+                <Text style={styles.mapTitle}>🗺️ Digital Naka - Live Map</Text>
+                <Text style={{ ...typography.bodySm, color: colors.textMuted }}>Live tracking of workers and pins for jobs near you.</Text>
+              </View>
+              <View style={{ height: 260, width: '100%', backgroundColor: '#eee' }}>
+                <WebView
+                  originWhitelist={['*']}
+                  source={{ html: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                        <style>
+                            body { padding: 0; margin: 0; overflow: hidden; }
+                            html, body, #map { height: 100%; width: 100%; background: #E5E3DF; }
+                            .pin { width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+                        </style>
+                    </head>
+                    <body>
+                        <div id="map"></div>
+                        <script>
+                            var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([19.076, 72.877], 13);
+                            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+
+                            const addPins = (count, color, bounds) => {
+                              for(let i=0; i<count; i++) {
+                                  let lat = 19.076 + (Math.random() - 0.5) * bounds;
+                                  let lng = 72.877 + (Math.random() - 0.5) * bounds;
+                                  let icon = L.divIcon({ className: '', html: '<div class="pin" style="background:'+color+'"></div>' });
+                                  L.marker([lat, lng], {icon: icon}).addTo(map);
+                              }
+                            };
+
+                            // Red (Jobs), Blue (Workers), Purple (Painters/Pentors)
+                            addPins(10, '#F44336', 0.04);
+                            addPins(15, '#2196F3', 0.05);
+                            addPins(12, '#9C27B0', 0.045); // Added Painters (Purple)
+
+                            var userIcon = L.divIcon({ className: '', html: '<div class="pin" style="background:#000;width:20px;height:20px;"></div>' });
+                            L.marker([19.076, 72.877], {icon: userIcon}).addTo(map);
+                        </script>
+                    </body>
+                    </html>
+                  ` }}
+                  scrollEnabled={false}
+                  pointerEvents="none"
+                  style={{ flex: 1 }}
+                />
+              </View>
+              <View style={[styles.mapLegend, { padding: spacing.md, borderTopWidth: 1, borderTopColor: colors.border }]}>
+                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#2196F3' }]} /><Text style={styles.legendText}>Workers</Text></View>
+                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#F44336' }]} /><Text style={styles.legendText}>Jobs</Text></View>
+                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: '#9C27B0' }]} /><Text style={styles.legendText}>Painters</Text></View>
+              </View>
+            </Card>
+
+            {/* 2. Earnings & Status Row */}
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
+              <Card variant="accent" padding="md" style={{ flex: 1, justifyContent: 'center' }}>
+                <Text style={{ ...typography.labelSm, color: colors.primary }}>TOTAL EARNINGS</Text>
+                <Text style={{ ...typography.headlineMd, color: colors.primary }}>₹{weeklyEarnings.toLocaleString()}</Text>
+              </Card>
+              <Card variant="elevated" padding="md" style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ ...typography.labelSm, color: colors.textMuted }}>LEVEL</Text>
+                <Text style={{ ...typography.titleLg, color: '#CD7F32' }}>🥉 Bronze</Text>
+              </Card>
+            </View>
+
+            {/* 3. Nearby Jobs List */}
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>
                 {lang === 'hi' ? 'पास के काम' : 'Jobs Near You'}
@@ -319,8 +392,7 @@ export default function WorkerHomeScreen() {
             {jobs.length === 0 ? (
               <Card variant="flat" padding="xl" style={styles.emptyCard}>
                 <Text style={styles.emptyIcon}>🔍</Text>
-                <Text style={styles.emptyTitle}>No jobs nearby right now</Text>
-                <Text style={styles.emptyDesc}>Stay available — we'll notify you instantly!</Text>
+                <Text style={styles.emptyTitle}>Searching for jobs...</Text>
               </Card>
             ) : (
               jobs.map((job) => (
@@ -328,44 +400,6 @@ export default function WorkerHomeScreen() {
               ))
             )}
           </>
-        )}
-
-        {activeTab === 'map' && (
-          <Card variant="elevated" padding="lg" style={styles.mapCard}>
-            <Text style={styles.mapTitle}>🗺️ Digital Naka - Live Map</Text>
-            <View style={styles.mapPlaceholder}>
-              <View style={styles.mapGrid}>
-                {/* Simulated map with worker dots */}
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.mapDot,
-                      {
-                        left: `${15 + Math.random() * 70}%`,
-                        top: `${10 + Math.random() * 80}%`,
-                        backgroundColor: Math.random() > 0.3 ? colors.primaryContainer : colors.warning,
-                      },
-                    ]}
-                  />
-                ))}
-                <View style={styles.mapCenter}>
-                  <Text style={styles.mapCenterIcon}>📍</Text>
-                  <Text style={styles.mapCenterText}>You are here</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.mapLegend}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: colors.primaryContainer }]} />
-                <Text style={styles.legendText}>Available Workers</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
-                <Text style={styles.legendText}>Jobs Available</Text>
-              </View>
-            </View>
-          </Card>
         )}
 
         {activeTab === 'earnings' && (
@@ -392,29 +426,68 @@ export default function WorkerHomeScreen() {
             </Card>
           </>
         )}
+        {activeTab === 'my_jobs' && (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {lang === 'hi' ? 'मेरे काम' : 'My Applications'}
+              </Text>
+            </View>
+            <Card variant="elevated" padding="lg">
+              <Text style={styles.emptyTitle}>You haven't accepted any jobs yet</Text>
+              <Text style={styles.emptyDesc}>Go to Home to find nearby jobs and hit Accept & WhatsApp!</Text>
+            </Card>
+          </>
+        )}
+
+        {activeTab === 'profile' && (
+          <View style={{ gap: spacing.md }}>
+            <Card variant="elevated" padding="xl" style={{ alignItems: 'center' }}>
+              <View style={[styles.avatarSmall, { width: 80, height: 80, borderRadius: 40, marginBottom: spacing.md }]}>
+                <Text style={[styles.avatarText, { fontSize: 32 }]}>{(user?.name || 'W')[0]}</Text>
+              </View>
+              <Text style={styles.greeting}>{user?.name}</Text>
+              <Text style={styles.connectionText}>{user?.phone}</Text>
+            </Card>
+
+            <Card variant="elevated" padding="lg">
+              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>App Language</Text>
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <Button title="English" onPress={() => Alert.alert('Language', 'Set to English')} variant={lang === 'en' ? 'accent' : 'outline'} size="sm" />
+                <Button title="हिन्दी (Hindi)" onPress={() => Alert.alert('Language', 'Set to Hindi')} variant={lang === 'hi' ? 'accent' : 'outline'} size="sm" />
+                <Button title="मराठी (Marathi)" onPress={() => Alert.alert('Language', 'Set to Marathi')} variant="outline" size="sm" />
+              </View>
+            </Card>
+
+            <Card variant="elevated" padding="lg">
+              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>Update Profile with Voice 🗣️</Text>
+              <Text style={[styles.bodySm, { color: colors.textMuted, marginBottom: spacing.md }]}>Press the button below and type or speak to tell AI what your skills are.</Text>
+              <Button title="✨🎙️ Tell AI My Skills" onPress={() => setShowVoiceModal(true)} variant="primary" size="lg" />
+            </Card>
+
+            <Button title="Logout" variant="outline" onPress={() => router.replace('/login')} style={{ marginTop: spacing.xl, borderColor: colors.danger }} textStyle={{ color: colors.danger }} />
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         {[
-          { icon: '🏠', label: 'Home', active: true },
-          { icon: '📋', label: 'My Jobs' },
-          { icon: '🔔', label: 'Alerts', badge: unreadCount },
-          { icon: '💰', label: 'Earnings' },
-          { icon: '👤', label: 'Profile' },
+          { id: 'jobs', icon: '🏠', label: 'Home' },
+          { id: 'my_jobs', icon: '📋', label: 'My Jobs' },
+          { id: 'jobs', icon: '🔔', label: 'Alerts', badge: unreadCount },
+          { id: 'earnings', icon: '💰', label: 'Earnings' },
+          { id: 'profile', icon: '👤', label: 'Profile' },
         ].map((item, index) => (
           <TouchableOpacity
             key={index}
             style={styles.navItem}
-            onPress={() => {
-              if (item.label === 'Alerts') setActiveTab('jobs');
-              if (item.label === 'Earnings') setActiveTab('earnings');
-            }}
+            onPress={() => setActiveTab(item.id)}
           >
-            <Text style={[styles.navIcon, item.active && styles.navIconActive]}>
+            <Text style={[styles.navIcon, activeTab === item.id && styles.navIconActive]}>
               {item.icon}
             </Text>
-            <Text style={[styles.navLabel, item.active && styles.navLabelActive]}>
+            <Text style={[styles.navLabel, activeTab === item.id && styles.navLabelActive]}>
               {item.label}
             </Text>
             {item.badge > 0 && (

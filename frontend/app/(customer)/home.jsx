@@ -429,6 +429,34 @@ export default function CustomerHomeScreen() {
             )}
           </>
         )}
+        {activeTab === 'profile' && (
+          <View style={{ gap: spacing.md }}>
+            <Card variant="elevated" padding="xl" style={{ alignItems: 'center' }}>
+              <View style={[styles.avatarSmall, { width: 80, height: 80, borderRadius: 40, marginBottom: spacing.md }]}>
+                <Text style={[styles.avatarText, { fontSize: 32 }]}>{(user?.name || 'C')[0]}</Text>
+              </View>
+              <Text style={styles.greeting}>{user?.name}</Text>
+              <Text style={styles.connectionText}>{user?.phone}</Text>
+            </Card>
+
+            <Card variant="elevated" padding="lg">
+              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>App Language</Text>
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <Button title="English" onPress={() => Alert.alert('Language', 'Set to English')} variant={lang === 'en' ? 'accent' : 'outline'} size="sm" />
+                <Button title="हिन्दी (Hindi)" onPress={() => Alert.alert('Language', 'Set to Hindi')} variant={lang === 'hi' ? 'accent' : 'outline'} size="sm" />
+                <Button title="मराठी (Marathi)" onPress={() => Alert.alert('Language', 'Set to Marathi')} variant="outline" size="sm" />
+              </View>
+            </Card>
+
+            <Card variant="elevated" padding="lg">
+              <Text style={[styles.sectionTitle, { marginBottom: spacing.sm }]}>Rozgar AI 🗣️</Text>
+              <Text style={[styles.bodySm, { color: colors.textMuted, marginBottom: spacing.md }]}>Simply press the button below to use your voice to find any worker you need.</Text>
+              <Button title="✨🎙️ Find a Worker with AI" onPress={() => setShowVoiceModal(true)} variant="primary" size="lg" />
+            </Card>
+
+            <Button title="Logout" variant="outline" onPress={() => router.replace('/login')} style={{ marginTop: spacing.xl, borderColor: colors.danger }} textStyle={{ color: colors.danger }} />
+          </View>
+        )}
       </ScrollView>
 
       {/* Post Job Modal */}
@@ -535,9 +563,9 @@ export default function CustomerHomeScreen() {
               <Text style={styles.modalTitle}>✨ Rozgar AI Voice Assistant</Text>
               <TouchableOpacity onPress={() => setShowVoiceModal(false)}><Text style={styles.modalClose}>✕</Text></TouchableOpacity>
             </View>
-            <Text style={styles.inputLabel}>Speak or Type your requirement in Hindi/English:</Text>
+            <Text style={{ ...typography.labelLg, color: colors.text, marginBottom: spacing.sm, marginTop: spacing.md }}>Voice or Type your requirement in Hindi/English:</Text>
             <TextInput
-              style={[styles.input, styles.inputMultiline, { borderColor: colors.primary, borderWidth: 1 }]}
+              style={{ backgroundColor: colors.white, borderRadius: borderRadius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.md, ...typography.bodyLg, color: colors.text, borderColor: colors.primary, borderWidth: 1, minHeight: 80, textAlignVertical: 'top' }}
               placeholder="e.g. 'Mujhe electrician chahiye aaj...'"
               placeholderTextColor={colors.textMuted}
               value={aiPrompt}
@@ -560,17 +588,17 @@ export default function CustomerHomeScreen() {
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         {[
-          { icon: '🏠', label: 'Home', active: true },
-          { icon: '🔍', label: 'Search' },
-          { icon: '➕', label: 'Post Job', isMain: true },
-          { icon: '💬', label: 'Messages' },
-          { icon: '👤', label: 'Profile' },
+          { id: 'find', icon: '🏠', label: 'Home' },
+          { id: 'myjobs', icon: '📋', label: 'My Jobs' },
+          { id: 'post', icon: '➕', label: 'Post Job', isMain: true },
+          { id: 'profile', icon: '👤', label: 'Profile' },
         ].map((item, index) => (
           <TouchableOpacity
             key={index}
             style={[styles.navItem, item.isMain && styles.navItemMain]}
             onPress={() => {
               if (item.label === 'Post Job') setShowPostJob(true);
+              else setActiveTab(item.id);
             }}
           >
             {item.isMain ? (
@@ -579,10 +607,10 @@ export default function CustomerHomeScreen() {
               </View>
             ) : (
               <>
-                <Text style={[styles.navIcon, item.active && styles.navIconActive]}>
+                <Text style={[styles.navIcon, activeTab === item.id && styles.navIconActive]}>
                   {item.icon}
                 </Text>
-                <Text style={[styles.navLabel, item.active && styles.navLabelActive]}>
+                <Text style={[styles.navLabel, activeTab === item.id && styles.navLabelActive]}>
                   {item.label}
                 </Text>
               </>
