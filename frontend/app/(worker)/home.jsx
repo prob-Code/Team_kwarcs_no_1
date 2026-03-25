@@ -119,7 +119,7 @@ export default function WorkerHomeScreen() {
     if (!aiPrompt.trim()) return;
     setAiProcessing(true);
     try {
-      const gapiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyCYkFlTjtUp5e6pYHvHMbNqtqkPe1bDiUQ';
+      const gapiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.EXPO_PUBLIC_GEMINI_API_KEY}`;
       const promptText = `
       You are an AI assistant for a gig worker app ('Rozgar Saathi').
       The worker typed: "${aiPrompt}"
@@ -340,7 +340,29 @@ export default function WorkerHomeScreen() {
                             var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([19.076, 72.877], 13);
                             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
-                            const addPins = (count, color, bounds) => {
+                            const jobsData = ${JSON.stringify(jobs.map(j => ({
+                                id: j.id,
+                                lat: j.lat,
+                                lng: j.lng
+                            })))};
+
+                            // Plot jobs
+                            jobsData.forEach(j => {
+                                let lat = j.lat || (19.076 + (Math.random() - 0.5) * 0.04);
+                                let lng = j.lng || (72.877 + (Math.random() - 0.5) * 0.04);
+                                let icon = L.divIcon({ className: '', html: '<div class="pin" style="background:#F44336"></div>' });
+                                L.marker([lat, lng], {icon: icon}).addTo(map);
+                            });
+
+                            // Plot self (Worker)
+                            let myLat = ${user?.lat || 19.076};
+                            let myLng = ${user?.lng || 72.877};
+                            let myColor = '#2196F3'; // Worker
+                            let myIcon = L.divIcon({ className: '', html: '<div class="pin" style="background:' + myColor + '; width:20px; height:20px; border-width:3px;"></div>' });
+                            L.marker([myLat, myLng], {icon: myIcon}).addTo(map);
+                            
+                            // Add a few nearby random workers just for visual population
+                            const addRandomPins = (count, color, bounds) => {
                               for(let i=0; i<count; i++) {
                                   let lat = 19.076 + (Math.random() - 0.5) * bounds;
                                   let lng = 72.877 + (Math.random() - 0.5) * bounds;
@@ -348,9 +370,8 @@ export default function WorkerHomeScreen() {
                                   L.marker([lat, lng], {icon: icon}).addTo(map);
                               }
                             };
-                            addPins(10, '#F44336', 0.04); // Jobs
-                            addPins(15, '#2196F3', 0.05); // Workers
-                            addPins(12, '#9C27B0', 0.045); // Painters
+                            addRandomPins(5, '#2196F3', 0.05);
+                            addRandomPins(4, '#9C27B0', 0.045);
                         </script>
                     </body>
                     </html>

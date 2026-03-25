@@ -101,7 +101,7 @@ export default function CustomerHomeScreen() {
     if (!aiPrompt.trim()) return;
     setAiProcessing(true);
     try {
-      const gapiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyCYkFlTjtUp5e6pYHvHMbNqtqkPe1bDiUQ';
+      const gapiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.EXPO_PUBLIC_GEMINI_API_KEY}`;
       const promptText = `
       You are an AI parsing agent for 'Rozgar Saathi', a platform for gig workers in India.
       The user typed this natural language/voice input: "${aiPrompt}"
@@ -334,16 +334,20 @@ export default function CustomerHomeScreen() {
                             var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([19.076, 72.877], 13);
                             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
-                            const addPins = (count, color, bounds) => {
-                              for(let i=0; i<count; i++) {
-                                  let lat = 19.076 + (Math.random() - 0.5) * bounds;
-                                  let lng = 72.877 + (Math.random() - 0.5) * bounds;
-                                  let icon = L.divIcon({ className: '', html: '<div class="pin" style="background:'+color+'"></div>' });
-                                  L.marker([lat, lng], {icon: icon}).addTo(map);
-                              }
-                            };
-                            addPins(15, '#2196F3', 0.05); // Workers (Blue)
-                            addPins(8, '#9C27B0', 0.04); // Painters (Purple)
+                            const workersData = ${JSON.stringify(workers.map(w => ({
+                                id: w.id,
+                                lat: w.lat,
+                                lng: w.lng,
+                                skill: w.skill
+                            })))};
+
+                            workersData.forEach(w => {
+                                let lat = w.lat || (19.076 + (Math.random() - 0.5) * 0.05);
+                                let lng = w.lng || (72.877 + (Math.random() - 0.5) * 0.05);
+                                let color = w.skill === 'painter' ? '#9C27B0' : '#2196F3';
+                                let icon = L.divIcon({ className: '', html: '<div class="pin" style="background:'+color+'"></div>' });
+                                L.marker([lat, lng], {icon: icon}).addTo(map);
+                            });
                         </script>
                     </body>
                     </html>
